@@ -6,13 +6,13 @@ extends EditorPlugin
 ## No autoloads: a client and a server in one process each want their own
 ## [GSPhysicsWorld], and the second one is exactly the case an autoload forbids.
 
-const _ICON := "res://addons/dot_physics/icon_placeholder.svg"
+const _ICON := "res://addons/gs_physics/icon_placeholder.svg"
 
 const _TYPES := [
 	[
 		"GSPhysicsWorld",
 		"Node",
-		"res://addons/dot_physics/runtime/dot_physics_world.gd",
+		"res://addons/gs_physics/runtime/gs_physics_world.gd",
 	],
 ]
 

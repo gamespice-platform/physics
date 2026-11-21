@@ -10,7 +10,7 @@ The addon only decides what Godot is told. Godot still does the simulation.
 
 ## Install
 
-1. Copy `addons/dot_physics/` and `addons/dot_core/` into your project.
+1. Copy `addons/gs_physics/` and `addons/gs_core/` into your project.
 2. Enable both in *Project > Project Settings > Plugins*.
 
 Needs Godot 4.7 or newer.

@@ -1,6 +1,6 @@
 extends Node
 
-## Exercises dot-physics with no bodies, no level and no renderer.
+## Exercises gs-physics with no bodies, no level and no renderer.
 ##
 ## Which is nearly all of it, because nearly all of it is a decision rather than a
 ## simulation: which bit a layer got, what a mask comes out as, whether a table refuses
@@ -26,7 +26,7 @@ func _ready() -> void:
 
 
 func _run() -> void:
-	_line("dot-physics self-test")
+	_line("gs-physics self-test")
 	_line("")
 
 	_test_layers()
@@ -281,7 +281,7 @@ func _test_profiles() -> void:
 	_check(
 		is_equal_approx(p.gravity_3d, 20.0),
 		"with gravity at 20 rather than 9.8 — true Earth gravity at a human scale "
-		+ "reads as floating, and dot-player-controller's own tunables already say 20"
+		+ "reads as floating, and gs-player-controller's own tunables already say 20"
 	)
 	_check(is_equal_approx(p.tick_delta(), 1.0 / 60.0), "and a tick is 1/60 s")
 
@@ -340,7 +340,7 @@ func _test_profiles() -> void:
 	_check(applied.size() == 2, "a profile takes a dictionary the family's way")
 	_check(layered.tick_rate == 128, "and the tick rate came through")
 	_check(is_equal_approx(layered.gravity_3d, 15.5), "and so did gravity")
-	_check(layered.env_prefix() == "DOT_PHYSICS_", "with its own environment prefix")
+	_check(layered.env_prefix() == "GS_PHYSICS_", "with its own environment prefix")
 
 
 
@@ -674,7 +674,7 @@ func _line(text: String) -> void:
 ## Every file under the addon that asks the physics space a question. A new
 ## one fails here until it is added to [constant QUERY_FILES] and to docs/threading.md, so the
 ## list of callers that must run inside a physics step cannot go stale.
-const QUERY_FILES: Array[String] = ["runtime/dot_physics_query.gd"]
+const QUERY_FILES: Array[String] = ["runtime/gs_physics_query.gd"]
 const QUERY_NEEDLES: Array[String] = ["direct_space_state", "space.intersect_", "space.cast_motion(", "space.get_rest_info("]
 const TICK_ENTRY_NEEDLES: Array[String] = ["func _process(", "func _input(", "func _unhandled_input(", "call_deferred(", "await "]
 
@@ -690,7 +690,7 @@ func _audit_scripts(dir: String, out: Array[String]) -> void:
 func _test_space_query_audit() -> void:
 	_section("space-query audit")
 	var scripts: Array[String] = []
-	_audit_scripts("res://addons/dot_physics", scripts)
+	_audit_scripts("res://addons/gs_physics", scripts)
 	var found: Array[String] = []
 	var in_tick_entry: Array[String] = []
 
@@ -702,7 +702,7 @@ func _test_space_query_audit() -> void:
 				queries = true
 		if not queries:
 			continue
-		var rel := path.trim_prefix("res://addons/dot_physics/")
+		var rel := path.trim_prefix("res://addons/gs_physics/")
 		found.append(rel)
 		for n in TICK_ENTRY_NEEDLES:
 			if text.contains(n):

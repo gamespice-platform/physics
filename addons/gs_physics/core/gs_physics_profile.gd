@@ -140,7 +140,7 @@ extends GSConfig
 
 
 func env_prefix() -> String:
-	return "DOT_PHYSICS_"
+	return "GS_PHYSICS_"
 
 
 func cli_prefix() -> String:

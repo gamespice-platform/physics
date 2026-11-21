@@ -26,7 +26,7 @@ extends Node
 const CHANNEL := "physics"
 
 ## Registry name, so anything can find the one in the scene without a path.
-const SERVICE := &"dot_physics_world"
+const SERVICE := &"gs_physics_world"
 
 ## The two halves of Godot's layer-name settings. Declared rather than written as a
 ## literal in the loop: an untyped array literal makes its loop variable a [Variant],
@@ -235,7 +235,7 @@ func is_applied() -> bool:
 
 func describe_lines() -> PackedStringArray:
 	var out := PackedStringArray()
-	out.append("dot-physics %s" % ("applied" if _applied else "not applied"))
+	out.append("gs-physics %s" % ("applied" if _applied else "not applied"))
 
 	if profile != null:
 		out.append("  tick rate        %d Hz (%.4f s)" % [

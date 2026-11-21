@@ -4,7 +4,7 @@ Physics as a choice a game makes, rather than as whatever the engine defaulted t
 
 Read the family [CLAUDE.md](../../CLAUDE.md) first.
 
-**The distributable is `addons/dot_physics/`.** It requires [GameSpice Core](../dot-core) and nothing else (`ln -s ../../dot-core/addons/dot_core addons/dot_core`, gitignored).
+**The distributable is `addons/gs_physics/`.** It requires [GameSpice Core](../gs-core) and nothing else (`ln -s ../../gs-core/addons/gs_core addons/gs_core`, gitignored).
 
 ## Read before
 
@@ -18,17 +18,17 @@ Read the family [CLAUDE.md](../../CLAUDE.md) first.
 
 | Path | What |
 | --- | --- |
-| `core/dot_physics_layer.gd` | `GSPhysicsLayer`: one named layer, `collides_with`, `query_only`, the assigned `bit` |
-| `core/dot_physics_layout.gd` | `GSPhysicsLayout`: the set, `build()` closing the matrix, `layer_mask`/`mask_of`/`solid_mask`, four presets and `custom` |
-| `core/dot_physics_profile.gd` | `GSPhysicsProfile`: every engine number (gravity, tick rate, ...) as a layered `GSConfig` |
-| `core/dot_physics_surface.gd` | `GSPhysicsSurface`: what one material is like to collide with |
-| `core/dot_physics_surface_set.gd` | `GSPhysicsSurfaceSet`: the table, `standard()`, how a collider maps to an entry (`tag`) |
-| `runtime/dot_physics_world.gd` | `GSPhysicsWorld`: applies a profile and a layout, `classify`, puts settings back on exit |
-| `runtime/dot_physics_query.gd` | `GSPhysicsQuery`: casts written against layer names (`shot_3d`) |
-| `runtime/dot_tick_gate.gd` | `GSTickGate`: holds handlers heard between ticks until the server's next tick (docs/threading.md) |
+| `core/gs_physics_layer.gd` | `GSPhysicsLayer`: one named layer, `collides_with`, `query_only`, the assigned `bit` |
+| `core/gs_physics_layout.gd` | `GSPhysicsLayout`: the set, `build()` closing the matrix, `layer_mask`/`mask_of`/`solid_mask`, four presets and `custom` |
+| `core/gs_physics_profile.gd` | `GSPhysicsProfile`: every engine number (gravity, tick rate, ...) as a layered `GSConfig` |
+| `core/gs_physics_surface.gd` | `GSPhysicsSurface`: what one material is like to collide with |
+| `core/gs_physics_surface_set.gd` | `GSPhysicsSurfaceSet`: the table, `standard()`, how a collider maps to an entry (`tag`) |
+| `runtime/gs_physics_world.gd` | `GSPhysicsWorld`: applies a profile and a layout, `classify`, puts settings back on exit |
+| `runtime/gs_physics_query.gd` | `GSPhysicsQuery`: casts written against layer names (`shot_3d`) |
+| `runtime/gs_tick_gate.gd` | `GSTickGate`: holds handlers heard between ticks until the server's next tick (docs/threading.md) |
 | `examples/physics_selftest.tscn` | the suite: no world, no bodies, no renderer for the `core/` half |
 
-Paths except `examples/` are in `addons/dot_physics/`.
+Paths except `examples/` are in `addons/gs_physics/`.
 
 ## Running and testing
 

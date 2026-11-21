@@ -20,7 +20,7 @@ extends Resource
 const CHANNEL := "physics.surfaces"
 
 ## The node metadata key checked first. A mapper sets this on a [StaticBody3D].
-const META_KEY := "dot_surface"
+const META_KEY := "gs_surface"
 
 @export var surfaces: Array[GSPhysicsSurface] = []
 
@@ -130,7 +130,7 @@ static func tag(node: Node, surface_id: StringName) -> void:
 const SWIM_DENSITY := 1200.0
 
 ## Node metadata key [method apply] writes beside [constant META_KEY], and [method material_of] reads.
-const META_MATERIAL := "dot_material"
+const META_MATERIAL := "gs_material"
 
 
 ## The surface with exactly this id, or null (unlike [method get_surface], no fallback).
