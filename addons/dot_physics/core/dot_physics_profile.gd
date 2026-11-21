@@ -1,6 +1,6 @@
 @tool
-class_name DotPhysicsProfile
-extends DotConfig
+class_name GSPhysicsProfile
+extends GSConfig
 
 ## Every engine-level physics number, layered, with presets named after how they feel.
 ##
@@ -8,7 +8,7 @@ extends DotConfig
 ## again.[/b] They live in ProjectSettings under names like
 ## [code]physics/3d/solver/default_contact_bias[/code], they are not in version control
 ## in any reviewable form, and changing one changes how every rigid body in the game
-## behaves. So they are a [DotConfig] here instead: layered the family's way — exported
+## behaves. So they are a [GSConfig] here instead: layered the family's way — exported
 ## defaults, then a JSON file, then the environment, then the command line — which is
 ## what lets a dedicated server be told to run at 128 Hz without a rebuild.
 ##
@@ -147,18 +147,18 @@ func cli_prefix() -> String:
 	return "--physics-"
 
 
-func validate() -> DotResult:
+func validate() -> GSResult:
 	if step_height >= 1.0 and max_slope_angle < 1.0:
-		return DotResult.fail(
-			DotError.CODE_INVALID,
+		return GSResult.fail(
+			GSError.CODE_INVALID,
 			"A step height of %.2f m with a maximum slope of %.1f° means a character "
 			% [step_height, max_slope_angle]
 			+ "steps up things it may not stand on, and then falls off them."
 		)
 
 	if contact_max_separation < max_allowed_penetration:
-		return DotResult.fail(
-			DotError.CODE_INVALID,
+		return GSResult.fail(
+			GSError.CODE_INVALID,
 			(
 				"contact_max_separation (%.4f) is below max_allowed_penetration "
 				+ "(%.4f). The solver would discard the contacts it is meant to be "
@@ -167,11 +167,11 @@ func validate() -> DotResult:
 		)
 
 	if max_steps_per_frame < 1:
-		return DotResult.fail(
-			DotError.CODE_INVALID, "max_steps_per_frame must be at least 1."
+		return GSResult.fail(
+			GSError.CODE_INVALID, "max_steps_per_frame must be at least 1."
 		)
 
-	return DotResult.success(null)
+	return GSResult.success(null)
 
 
 ## Seconds in one simulated tick.
@@ -206,7 +206,7 @@ func gravity_vector_2d() -> Vector2:
 ## The arcade first-person shooter: air control matters, jumps are short and snappy, and
 ## the physics exists to be shot at rather than to be simulated accurately. 128 Hz
 ## because hit registration at speed is the whole game.
-static func arcade_shooter() -> DotPhysicsProfile:
+static func arcade_shooter() -> GSPhysicsProfile:
 	# Not this class's own name. A script that names itself in an expression, loaded after
 	# its base, cuts Godot 4.7.2's exit teardown short and leaks every script loaded before
 	# it. See docs/gdscript-hazards.md, "A script that names itself".
@@ -230,7 +230,7 @@ static func arcade_shooter() -> DotPhysicsProfile:
 ## The grounded shooter and the co-operative shooter: movement is weighty, stacks of
 ## crates hold, ragdolls settle rather than twitch. 64 Hz, because the simulation is
 ## doing more per tick and nothing in it is decided by a shot fired mid-strafe.
-static func grounded() -> DotPhysicsProfile:
+static func grounded() -> GSPhysicsProfile:
 	var p := new()
 	p.tick_rate = 64
 	p.gravity_3d = 12.0
@@ -250,7 +250,7 @@ static func grounded() -> DotPhysicsProfile:
 ## The sandbox: high solver iterations so a stack holds, an aggressive sleep threshold
 ## so a map full of settled props is free, and characters that push bodies because
 ## shoving things about is the point.
-static func sandbox() -> DotPhysicsProfile:
+static func sandbox() -> GSPhysicsProfile:
 	var p := new()
 	p.tick_rate = 64
 	p.gravity_3d = 16.0
@@ -270,7 +270,7 @@ static func sandbox() -> DotPhysicsProfile:
 ##
 ## The side-on platformer, where gravity is a design parameter rather than a physical
 ## constant and the arc of a jump is the whole feel of the game.
-static func floaty_platformer() -> DotPhysicsProfile:
+static func floaty_platformer() -> GSPhysicsProfile:
 	var p := new()
 	p.tick_rate = 60
 	p.gravity_2d = 1400.0
@@ -287,7 +287,7 @@ static func floaty_platformer() -> DotPhysicsProfile:
 ##
 ## The top-down arena. Everything that moves is driven rather than falling, so the only
 ## numbers that matter are the solver's and the sleep threshold's.
-static func top_down() -> DotPhysicsProfile:
+static func top_down() -> GSPhysicsProfile:
 	var p := new()
 	p.tick_rate = 60
 	p.gravity_2d_enabled = false
@@ -312,7 +312,7 @@ static func top_down() -> DotPhysicsProfile:
 ## So: adopt what is there, change the one thing you meant to change, apply that.
 ##
 ## [codeblock]
-## var profile := DotPhysicsProfile.from_project()
+## var profile := GSPhysicsProfile.from_project()
 ## profile.tick_rate = game.tick_rate      # the only thing this game decides
 ## world.profile = profile
 ## [/codeblock]
@@ -320,7 +320,7 @@ static func top_down() -> DotPhysicsProfile:
 ## The character fields — [member max_slope_angle], [member step_height],
 ## [member characters_push_bodies] — have no ProjectSettings counterpart and keep this
 ## class's defaults. Nothing in the engine reads them; a controller does.
-static func from_project() -> DotPhysicsProfile:
+static func from_project() -> GSPhysicsProfile:
 	var p := new()
 
 	p.tick_rate = int(_setting("physics/common/physics_ticks_per_second", p.tick_rate))
@@ -390,7 +390,7 @@ static func presets() -> Dictionary:
 	}
 
 
-static func preset(p_id: StringName) -> DotPhysicsProfile:
+static func preset(p_id: StringName) -> GSPhysicsProfile:
 	var table := presets()
 
 	if not table.has(p_id):

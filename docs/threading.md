@@ -7,27 +7,27 @@ Godot's `physics/3d/run_on_separate_thread` makes `PhysicsDirectSpaceState` acce
 | File | Query | Who must call it inside a physics step |
 | --- | --- | --- |
 | `dot-physics/addons/dot_physics/runtime/dot_physics_query.gd` | `ray_3d`, `ray_2d`, `sphere_3d`, `circle_2d`, `line_of_sight_3d` through `direct_space_state` | Every caller; it takes the `World3D`/`World2D` and never schedules anything |
-| `dot-combat/addons/dot_combat/trace/dot_trace_physics.gd` | `intersect_ray` for the world half of a `DotTrace` | `DotCombatManager.resolve_shot` and anything tracing: from the tick, never from `_process` or a signal that fires between ticks |
+| `dot-combat/addons/dot_combat/trace/dot_trace_physics.gd` | `intersect_ray` for the world half of a `GSTrace` | `GSCombatManager.resolve_shot` and anything tracing: from the tick, never from `_process` or a signal that fires between ticks |
 | `dot-combat/addons/dot_combat/core/dot_sentry.gd` | `find_spot` (static, the caller passes the space) | The placement handler; get the space from `get_world_3d().direct_space_state` inside the same step |
 
-Everything else in GameSpice Combat (`DotHitbox`, `DotHitboxSet`, lag-compensation rewind, `DotTrace`'s hitbox half) is analytic geometry on node transforms: no space state. Lag compensation moves bodies and then queries, on the main thread inside the tick, and must stay there.
+Everything else in GameSpice Combat (`GSHitbox`, `GSHitboxSet`, lag-compensation rewind, `GSTrace`'s hitbox half) is analytic geometry on node transforms: no space state. Lag compensation moves bodies and then queries, on the main thread inside the tick, and must stay there.
 
-`DotTracePhysics._world_ray` already warns when no space state exists instead of reporting a miss. With the threaded setting, an out-of-step access is an engine error and an empty result, so a wall would read as open: the warning is the signal.
+`GSTracePhysics._world_ray` already warns when no space state exists instead of reporting a miss. With the threaded setting, an out-of-step access is an engine error and an empty result, so a wall would read as open: the warning is the signal.
 
 ## Callers in GameSpice Vehicle and mg-prop-hunt
 
 | File and function | Query | Who calls it |
 | --- | --- | --- |
-| `dot-vehicle/addons/dot_vehicle/runtime/dot_vehicle_hover.gd` `_drive` | one `intersect_ray` per mount | `DotVehicleSpawner.tick` through `DotVehicleChassis.drive`: caller-driven, in the step |
-| `dot-vehicle/addons/dot_vehicle/runtime/dot_vehicle_ride.gd` `find_exit_position` | `intersect_shape` per exit candidate | `exit`, reached from `DotVehicleSpawner.set_command` (an exit request), `destroy` and `remove` (`_evacuate`). `set_command` queues the exit and `destroy`/`remove` of an occupied vehicle queue too; `DotVehicleSpawner.tick` performs them first thing, so the sweep runs in the step. |
+| `dot-vehicle/addons/dot_vehicle/runtime/dot_vehicle_hover.gd` `_drive` | one `intersect_ray` per mount | `GSVehicleSpawner.tick` through `GSVehicleChassis.drive`: caller-driven, in the step |
+| `dot-vehicle/addons/dot_vehicle/runtime/dot_vehicle_ride.gd` `find_exit_position` | `intersect_shape` per exit candidate | `exit`, reached from `GSVehicleSpawner.set_command` (an exit request), `destroy` and `remove` (`_evacuate`). `set_command` queues the exit and `destroy`/`remove` of an occupied vehicle queue too; `GSVehicleSpawner.tick` performs them first thing, so the sweep runs in the step. |
 | `mg-prop-hunt/game/ph_game.gd` `_clear_between`, `_look`, `_make_room` | ray and shape | `_step` only: decoy checks, bots, and the queued requests. The net bridge and the offline client call `queue_disguise`/`queue_reveal`, which `_step` drains first thing (`request_disguise` and `reveal` are the in-tick implementations). |
 | `mg-prop-hunt/game/ph_client.gd` `_process` | one ray for the ambient roof probe | Client only, every frame. The threaded option is a server setting and a client never sets it, so this stays out of the step |
 
 Both suites grep their own code for this (`vehicle_selftest` and `headless_config` section "space-query audit"). Both request-handler paths queue the request and run it in the next tick; the replies are the `refused` signals as before.
 
-## Handlers that arrive between ticks: DotTickGate
+## Handlers that arrive between ticks: GSTickGate
 
-Console and chat commands, admin tools, map votes and network requests run in the idle frame, not in the step. A game whose handler reaches a query (a map change that rebuilds nav and drops objects with rays, a spawn that snaps to the floor) routes it through one `DotTickGate` (`runtime/dot_tick_gate.gd`, no space access itself):
+Console and chat commands, admin tools, map votes and network requests run in the idle frame, not in the step. A game whose handler reaches a query (a map change that rebuilds nav and drops objects with rays, a spawn that snaps to the floor) routes it through one `GSTickGate` (`runtime/dot_tick_gate.gd`, no space access itself):
 
 - The server sets `armed = true` when it starts and calls `disarm()` when it stops; solo, clients and bare suites leave it unarmed and every call runs at once.
 - The server's tick calls `open()` first thing: queued calls run in arrival order, then coroutines waiting in `reached()` resume, still inside the step.
@@ -46,19 +46,19 @@ Found by running every suite with the setting on and tracing each "Space state i
 
 | Where | Query | Runs |
 | --- | --- | --- |
-| GameSpice Player Controller `DotFpsPhysicsBodyNative.bind` | `direct_space_state` | Off-step on a join. On a threaded server it leaves the space unbound and the first query in the step binds it through `revalidate` (`fps_controller_selftest` section "threaded bind"). |
+| GameSpice Player Controller `GSFpsPhysicsBodyNative.bind` | `direct_space_state` | Off-step on a join. On a threaded server it leaves the space unbound and the first query in the step binds it through `revalidate` (`fps_controller_selftest` section "threaded bind"). |
 | GameSpice Player Controller motor, hull, surf, ladders | rays and shape casts | `simulate_tick` from the game tick: in the step |
-| GameSpice Player Controller `DotCameraBoom`, `DotCameraProbe`, `DotTpsController` camera | camera rays | Client only |
-| GameSpice NPC senses, GameSpice Bot nav (`_step_stitches`, `_buried`, `_clear_fall`, `_drop_landing`), GameSpice 2D `body_physics`, GameSpice Core `DotSpaceQuery` | rays and shapes | Caller-driven: from the game tick or bot think |
+| GameSpice Player Controller `GSCameraBoom`, `GSCameraProbe`, `GSTpsController` camera | camera rays | Client only |
+| GameSpice NPC senses, GameSpice Bot nav (`_step_stitches`, `_buried`, `_clear_fall`, `_drop_landing`), GameSpice 2D `body_physics`, GameSpice Core `GSSpaceQuery` | rays and shapes | Caller-driven: from the game tick or bot think |
 | dot-npc-ai annotator, dot-npc-ai-director `_is_visible_to_any_player`, dot-weapon drops, dot-props `toy_box` | rays | Stepped from the game tick |
 | GameSpice Props toy `_sleep_at_start` | ray | After `await physics_frame` |
-| GameSpice Spectate `_killer_hidden` | ray | Server delivery, inside `DotNetManager._physics_process` |
+| GameSpice Spectate `_killer_hidden` | ray | Server delivery, inside `GSNetManager._physics_process` |
 | GameSpice Player Char ragdoll `crossing`, `_hold_walls` | rays | `_physics_process` |
-| GameSpice Player Char `DotHumanoidLegs.floor_lift`, ragdolls `_covered`; GameSpice Audio, GameSpice FX, GameSpice Mobile, GameSpice Voice | rays | Client only (`_process`) |
+| GameSpice Player Char `GSHumanoidLegs.floor_lift`, ragdolls `_covered`; GameSpice Audio, GameSpice FX, GameSpice Mobile, GameSpice Voice | rays | Client only (`_process`) |
 | GameSpice Map glass sight, use, world | rays | The caller passes the space |
 | GameSpice Core `collision_sweep` | sweeps | Editor and tools |
-| GameSpice Core `DotCameraFade`, Zombie Zone zee-weapons view (`ZeeWorldModel._probe_wall`) | rays and shapes | Client only (`_process`) |
-| Zombie Zone `ZzMap.clear_spot` (spawns, players placed at the start and on a join) | `intersect_shape` | The start and a join run off-step (module load, signon). There `clear_spot` returns the unchecked spot (`ZzMap.space_open()`), and `ZzGame.seat_on_start` re-clears the seat through the `DotTickGate` in the next step (`dedicated` section "a start point waits for the tick"). |
+| GameSpice Core `GSCameraFade`, Zombie Zone zee-weapons view (`ZeeWorldModel._probe_wall`) | rays and shapes | Client only (`_process`) |
+| Zombie Zone `ZzMap.clear_spot` (spawns, players placed at the start and on a join) | `intersect_shape` | The start and a join run off-step (module load, signon). There `clear_spot` returns the unchecked spot (`ZzMap.space_open()`), and `ZzGame.seat_on_start` re-clears the seat through the `GSTickGate` in the next step (`dedicated` section "a start point waits for the tick"). |
 | Fatal Contact server: `game.tick`, spawn scoring (`_can_see_site`), bot think, nav warm-up from `_keep_bots` | rays | In the step |
 | Fatal Contact map and mode changes (`FcMapSession.change_to_map` after a delivered pack mounts, `fc_mode`, restarts, admin respawns): `settle_spawns`, the spawn sight | shape and ray | Already wait on `game.tick_gate` (armed by `FcModule`), so they run first thing in the next tick |
 | Fatal Contact client: `fc_client._present_roof`, `fc_player._behind_world`, `fc_player_build._under_cursor`, fc-weapons view (`aw_view_model_wall`, `aw_wall_slam`, `aw_world_model._probe_wall`, `aw_shot_fx`) | rays | Client only (`_process`) |

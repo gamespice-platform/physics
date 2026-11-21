@@ -1,4 +1,4 @@
-class_name DotPhysicsWorld
+class_name GSPhysicsWorld
 extends Node
 
 ## Applies a profile and a layout to the running project, and can put them back.
@@ -15,10 +15,10 @@ extends Node
 ## remembered to.
 ##
 ## [codeblock]
-## var physics := DotPhysicsWorld.new()
-## physics.profile = DotPhysicsProfile.arcade_shooter()
-## physics.layout = DotPhysicsLayout.shooter_3d()
-## physics.surfaces = DotPhysicsSurfaceSet.standard()
+## var physics := GSPhysicsWorld.new()
+## physics.profile = GSPhysicsProfile.arcade_shooter()
+## physics.layout = GSPhysicsLayout.shooter_3d()
+## physics.surfaces = GSPhysicsSurfaceSet.standard()
 ## add_child(physics)
 ## var res := physics.setup()
 ## [/codeblock]
@@ -34,20 +34,20 @@ const SERVICE := &"dot_physics_world"
 const KINDS: Array[String] = ["3d", "2d"]
 
 ## Fired after [method setup] succeeds, so a controller can re-read gravity.
-signal applied(profile: DotPhysicsProfile, layout: DotPhysicsLayout)
+signal applied(profile: GSPhysicsProfile, layout: GSPhysicsLayout)
 
 ## Fired after [method restore].
 signal reverted()
 
 ## The numbers. Never null after [method setup] — a default is built if none was set.
-@export var profile: DotPhysicsProfile = null
+@export var profile: GSPhysicsProfile = null
 
 ## The collision table. Optional: without one, layer names resolve to nothing and
-## [DotPhysicsQuery] falls back to Godot's own "collide with everything".
-@export var layout: DotPhysicsLayout = null
+## [GSPhysicsQuery] falls back to Godot's own "collide with everything".
+@export var layout: GSPhysicsLayout = null
 
 ## The material table. Optional.
-@export var surfaces: DotPhysicsSurfaceSet = null
+@export var surfaces: GSPhysicsSurfaceSet = null
 
 ## Whether to write the layer [i]names[/i] into ProjectSettings as well as the numbers.
 ##
@@ -56,7 +56,7 @@ signal reverted()
 ## dedicated server, where nobody is looking at an inspector and the write is pure cost.
 @export var write_layer_names: bool = true
 
-## Whether to register in [DotRegistry] under [constant SERVICE].
+## Whether to register in [GSRegistry] under [constant SERVICE].
 @export var register_service: bool = true
 
 var _saved: Dictionary = {}
@@ -65,7 +65,7 @@ var _applied: bool = false
 
 func _ready() -> void:
 	if register_service:
-		DotRegistry.register(SERVICE, self)
+		GSRegistry.register(SERVICE, self)
 
 
 func _exit_tree() -> void:
@@ -81,9 +81,9 @@ func _exit_tree() -> void:
 ## because a half-applied physics configuration is worse than the one it replaced: the
 ## tick rate changed and the gravity did not, and the game is now in a state no preset
 ## describes.
-func setup() -> DotResult:
+func setup() -> GSResult:
 	if profile == null:
-		profile = DotPhysicsProfile.new()
+		profile = GSPhysicsProfile.new()
 
 	var valid := profile.validate()
 
@@ -146,7 +146,7 @@ func setup() -> DotResult:
 
 	_applied = true
 
-	DotLog.info(CHANNEL, "physics applied", {
+	GSLog.info(CHANNEL, "physics applied", {
 		"tick_rate": profile.tick_rate,
 		"gravity_3d": profile.gravity_3d,
 		"layout": String(layout.id) if layout != null else "<none>",
@@ -154,13 +154,13 @@ func setup() -> DotResult:
 	})
 
 	applied.emit(profile, layout)
-	return DotResult.success(null)
+	return GSResult.success(null)
 
 
 ## Puts every setting this node overwrote back.
-func restore() -> DotResult:
+func restore() -> GSResult:
 	if not _applied:
-		return DotResult.success(null)
+		return GSResult.success(null)
 
 	for key: Variant in _saved.keys():
 		ProjectSettings.set_setting(String(key), _saved[key])
@@ -178,20 +178,20 @@ func restore() -> DotResult:
 	_saved.clear()
 	_applied = false
 
-	DotLog.debug(CHANNEL, "physics restored")
+	GSLog.debug(CHANNEL, "physics restored")
 	reverted.emit()
-	return DotResult.success(null)
+	return GSResult.success(null)
 
 
 ## Switches to a named profile preset, keeping the layout.
-func use_profile_preset(preset_id: StringName) -> DotResult:
-	var p := DotPhysicsProfile.preset(preset_id)
+func use_profile_preset(preset_id: StringName) -> GSResult:
+	var p := GSPhysicsProfile.preset(preset_id)
 
 	if p == null:
-		return DotResult.fail(
-			DotError.CODE_INVALID,
+		return GSResult.fail(
+			GSError.CODE_INVALID,
 			"No physics profile preset called '%s'." % String(preset_id),
-			"Known: %s" % ", ".join(_preset_names(DotPhysicsProfile.presets()))
+			"Known: %s" % ", ".join(_preset_names(GSPhysicsProfile.presets()))
 		)
 
 	profile = p
@@ -199,14 +199,14 @@ func use_profile_preset(preset_id: StringName) -> DotResult:
 
 
 ## Switches to a named layout preset, keeping the profile.
-func use_layout_preset(preset_id: StringName) -> DotResult:
-	var l := DotPhysicsLayout.preset(preset_id)
+func use_layout_preset(preset_id: StringName) -> GSResult:
+	var l := GSPhysicsLayout.preset(preset_id)
 
 	if l == null:
-		return DotResult.fail(
-			DotError.CODE_INVALID,
+		return GSResult.fail(
+			GSError.CODE_INVALID,
 			"No collision layout preset called '%s'." % String(preset_id),
-			"Known: %s" % ", ".join(_preset_names(DotPhysicsLayout.presets()))
+			"Known: %s" % ", ".join(_preset_names(GSPhysicsLayout.presets()))
 		)
 
 	layout = l
@@ -214,15 +214,15 @@ func use_layout_preset(preset_id: StringName) -> DotResult:
 
 
 ## A query object bound to this world's layout and surfaces.
-func query() -> DotPhysicsQuery:
-	return DotPhysicsQuery.new(layout, surfaces)
+func query() -> GSPhysicsQuery:
+	return GSPhysicsQuery.new(layout, surfaces)
 
 
 ## Sets a collision object's layer and mask from the layout, by name.
-func classify(node: Node, layer_id: StringName) -> DotResult:
+func classify(node: Node, layer_id: StringName) -> GSResult:
 	if layout == null:
-		return DotResult.fail(
-			DotError.CODE_STATE,
+		return GSResult.fail(
+			GSError.CODE_STATE,
 			"No collision layout is installed, so '%s' means nothing." % String(layer_id)
 		)
 
@@ -265,7 +265,7 @@ func describe_lines() -> PackedStringArray:
 
 
 func describe() -> String:
-	return "DotPhysicsWorld(%s, %d Hz)" % [
+	return "GSPhysicsWorld(%s, %d Hz)" % [
 		"applied" if _applied else "idle",
 		profile.tick_rate if profile != null else 0,
 	]

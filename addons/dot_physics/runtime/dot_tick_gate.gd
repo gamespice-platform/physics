@@ -1,4 +1,4 @@
-class_name DotTickGate
+class_name GSTickGate
 extends RefCounted
 
 ## Holds work heard between server ticks that queries the physics space, and runs it at the top of the next tick.

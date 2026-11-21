@@ -1,5 +1,5 @@
 @tool
-class_name DotPhysicsLayer
+class_name GSPhysicsLayer
 extends Resource
 
 ## One named collision layer, and what it is allowed to touch.
@@ -11,7 +11,7 @@ extends Resource
 ## through the glass sometimes".
 ##
 ## So a layer is declared once, with a [member id], and everything downstream asks for it
-## by that id. [member bit] is an implementation detail that a [DotPhysicsLayout] assigns
+## by that id. [member bit] is an implementation detail that a [GSPhysicsLayout] assigns
 ## and nothing else needs to read.
 
 ## The name used everywhere else: [code]&"player"[/code], [code]&"debris"[/code].
@@ -29,17 +29,17 @@ extends Resource
 ## mutually exclusive in the engine — A's mask must contain B's layer [i]and[/i] the
 ## reverse for a pair to report a contact — and a table where "debris collides with
 ## world" is written in one place and "world collides with debris" in another is a table
-## that drifts. [method DotPhysicsLayout.build] closes the relation instead.
+## that drifts. [method GSPhysicsLayout.build] closes the relation instead.
 @export var collides_with: Array[StringName] = []
 
-## Human-readable, for the editor and for [method DotPhysicsLayout.describe_lines].
+## Human-readable, for the editor and for [method GSPhysicsLayout.describe_lines].
 @export var description: String = ""
 
 ## Whether this layer describes something that is queried but never simulated.
 ##
 ## Triggers, clip brushes and hitboxes are all this: an [Area3D] or a shape a raycast is
 ## meant to find, which no rigid body should ever rest on. Kept as a flag rather than a
-## convention because [method DotPhysicsLayout.query_only_mask] is what a bullet trace
+## convention because [method GSPhysicsLayout.query_only_mask] is what a bullet trace
 ## needs in order to skip them, and a game that gets it wrong sees shots stopping in
 ## mid-air on a trigger volume.
 @export var query_only: bool = false
@@ -50,8 +50,8 @@ static func make(
 	p_collides_with: Array[StringName] = [],
 	p_description: String = "",
 	p_query_only: bool = false
-) -> DotPhysicsLayer:
-	var l := DotPhysicsLayer.new()
+) -> GSPhysicsLayer:
+	var l := GSPhysicsLayer.new()
 	l.id = p_id
 	l.collides_with = p_collides_with.duplicate()
 	l.description = p_description
@@ -81,4 +81,4 @@ func _names() -> PackedStringArray:
 
 
 func _to_string() -> String:
-	return "DotPhysicsLayer(%s)" % describe()
+	return "GSPhysicsLayer(%s)" % describe()

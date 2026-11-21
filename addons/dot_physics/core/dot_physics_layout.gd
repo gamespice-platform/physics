@@ -1,5 +1,5 @@
 @tool
-class_name DotPhysicsLayout
+class_name GSPhysicsLayout
 extends Resource
 
 ## A named set of collision layers, and the matrix of what touches what.
@@ -10,13 +10,13 @@ extends Resource
 ## [method custom] exists for the fifth.
 ##
 ## [codeblock]
-## var layout := DotPhysicsLayout.shooter_3d()
+## var layout := GSPhysicsLayout.shooter_3d()
 ## body.collision_layer = layout.layer_mask(&"player")
 ## body.collision_mask  = layout.collision_mask(&"player")
 ## var world_only := layout.mask_of([&"world", &"static_prop"])
 ## [/codeblock]
 ##
-## Nothing here touches the engine. [DotPhysicsWorld] is what applies a layout to a
+## Nothing here touches the engine. [GSPhysicsWorld] is what applies a layout to a
 ## running project; this is the description, and it is a [Resource] so a game can save
 ## one, edit it in the inspector and hand it around.
 
@@ -28,7 +28,7 @@ const CHANNEL := "physics.layout"
 @export var description: String = ""
 
 ## The layers, in bit order. Index is the bit after [method build].
-@export var layers: Array[DotPhysicsLayer] = []
+@export var layers: Array[GSPhysicsLayer] = []
 
 var _by_id: Dictionary = {}
 var _built: bool = false
@@ -43,12 +43,12 @@ var _built: bool = false
 ## than half-building: a layout with two layers claiming one name is a layout where
 ## [method collision_mask] answers about whichever one was loaded second, which is not a
 ## thing to discover at runtime.
-func build() -> DotResult:
+func build() -> GSResult:
 	_by_id.clear()
 
 	if layers.size() > 32:
-		return DotResult.fail(
-			DotError.CODE_INVALID,
+		return GSResult.fail(
+			GSError.CODE_INVALID,
 			"A layout has at most 32 layers; this one has %d." % layers.size(),
 			"Godot gives a body 32 collision bits and there is no 33rd."
 		)
@@ -57,18 +57,18 @@ func build() -> DotResult:
 		var layer := layers[i]
 
 		if layer == null:
-			return DotResult.fail(
-				DotError.CODE_INVALID, "Layer %d is null." % i
+			return GSResult.fail(
+				GSError.CODE_INVALID, "Layer %d is null." % i
 			)
 
 		if layer.id == &"":
-			return DotResult.fail(
-				DotError.CODE_INVALID, "Layer %d has no id." % i
+			return GSResult.fail(
+				GSError.CODE_INVALID, "Layer %d has no id." % i
 			)
 
 		if _by_id.has(layer.id):
-			return DotResult.fail(
-				DotError.CODE_INVALID,
+			return GSResult.fail(
+				GSError.CODE_INVALID,
 				"Two layers are called '%s'." % String(layer.id),
 				"Every lookup would answer about the second one, silently."
 			)
@@ -82,30 +82,30 @@ func build() -> DotResult:
 	for layer in layers:
 		for other_id in layer.collides_with:
 			if not _by_id.has(other_id):
-				return DotResult.fail(
-					DotError.CODE_INVALID,
+				return GSResult.fail(
+					GSError.CODE_INVALID,
 					"Layer '%s' collides with '%s', which does not exist."
 					% [String(layer.id), String(other_id)],
 					"A name that resolves to nothing contributes no bit, so the pair "
 					+ "simply never collides and nothing says why."
 				)
 
-	# The relation is declared once and closed here. See DotPhysicsLayer.collides_with.
+	# The relation is declared once and closed here. See GSPhysicsLayer.collides_with.
 	for layer in layers:
 		for other_id in layer.collides_with.duplicate():
-			var other: DotPhysicsLayer = _by_id[other_id]
+			var other: GSPhysicsLayer = _by_id[other_id]
 			if not other.collides_with.has(layer.id):
 				other.collides_with.append(layer.id)
 
 	_built = true
-	return DotResult.success(null)
+	return GSResult.success(null)
 
 
 func _ensure_built() -> void:
 	if not _built or _by_id.size() != layers.size():
 		var res := build()
 		if not res.ok:
-			DotLog.error(CHANNEL, "layout is not usable", {"why": res.error.message})
+			GSLog.error(CHANNEL, "layout is not usable", {"why": res.error.message})
 
 
 # --- Lookup -----------------------------------------------------------------
@@ -115,7 +115,7 @@ func has_layer(layer_id: StringName) -> bool:
 	return _by_id.has(layer_id)
 
 
-func layer(layer_id: StringName) -> DotPhysicsLayer:
+func layer(layer_id: StringName) -> GSPhysicsLayer:
 	_ensure_built()
 	return _by_id.get(layer_id, null)
 
@@ -127,10 +127,10 @@ func layer(layer_id: StringName) -> DotPhysicsLayer:
 ## findable symptom. The warning names the layer.
 func layer_mask(layer_id: StringName) -> int:
 	_ensure_built()
-	var l: DotPhysicsLayer = _by_id.get(layer_id, null)
+	var l: GSPhysicsLayer = _by_id.get(layer_id, null)
 
 	if l == null:
-		DotLog.warn(CHANNEL, "no such layer", {"layer": String(layer_id), "layout": String(id)})
+		GSLog.warn(CHANNEL, "no such layer", {"layer": String(layer_id), "layout": String(id)})
 		return 0
 
 	return l.mask()
@@ -139,15 +139,15 @@ func layer_mask(layer_id: StringName) -> int:
 ## Everything a body on [param layer_id] should have in its `collision_mask`.
 func collision_mask(layer_id: StringName) -> int:
 	_ensure_built()
-	var l: DotPhysicsLayer = _by_id.get(layer_id, null)
+	var l: GSPhysicsLayer = _by_id.get(layer_id, null)
 
 	if l == null:
-		DotLog.warn(CHANNEL, "no such layer", {"layer": String(layer_id), "layout": String(id)})
+		GSLog.warn(CHANNEL, "no such layer", {"layer": String(layer_id), "layout": String(id)})
 		return 0
 
 	var mask := 0
 	for other_id in l.collides_with:
-		var other: DotPhysicsLayer = _by_id.get(other_id, null)
+		var other: GSPhysicsLayer = _by_id.get(other_id, null)
 		if other != null:
 			mask |= other.mask()
 
@@ -160,9 +160,9 @@ func mask_of(ids: Array[StringName]) -> int:
 	var mask := 0
 
 	for layer_id in ids:
-		var l: DotPhysicsLayer = _by_id.get(layer_id, null)
+		var l: GSPhysicsLayer = _by_id.get(layer_id, null)
 		if l == null:
-			DotLog.warn(CHANNEL, "no such layer", {"layer": String(layer_id)})
+			GSLog.warn(CHANNEL, "no such layer", {"layer": String(layer_id)})
 			continue
 		mask |= l.mask()
 
@@ -213,7 +213,7 @@ func layer_ids() -> Array[StringName]:
 ## Whether two layers collide. The matrix, as a question.
 func collides(a: StringName, b: StringName) -> bool:
 	_ensure_built()
-	var la: DotPhysicsLayer = _by_id.get(a, null)
+	var la: GSPhysicsLayer = _by_id.get(a, null)
 	if la == null:
 		return false
 	return la.collides_with.has(b)
@@ -226,32 +226,32 @@ func collides(a: StringName, b: StringName) -> bool:
 ## Typed as [Node] rather than as [CollisionObject3D] deliberately: 2D and 3D have no
 ## common base below [Node], and a layout is used by both. The property names are
 ## identical on each, which is why this works at all.
-func apply_to(node: Node, layer_id: StringName) -> DotResult:
+func apply_to(node: Node, layer_id: StringName) -> GSResult:
 	if node == null:
-		return DotResult.fail(DotError.CODE_INVALID, "No node to apply a layout to.")
+		return GSResult.fail(GSError.CODE_INVALID, "No node to apply a layout to.")
 
 	if not (node is CollisionObject2D or node is CollisionObject3D):
-		return DotResult.fail(
-			DotError.CODE_INVALID,
+		return GSResult.fail(
+			GSError.CODE_INVALID,
 			"%s is not a collision object." % node.name,
 			"Only a CollisionObject2D or CollisionObject3D has collision_layer."
 		)
 
 	if not has_layer(layer_id):
-		return DotResult.fail(
-			DotError.CODE_INVALID,
+		return GSResult.fail(
+			GSError.CODE_INVALID,
 			"This layout has no layer called '%s'." % String(layer_id)
 		)
 
 	node.set("collision_layer", layer_mask(layer_id))
 	node.set("collision_mask", collision_mask(layer_id))
-	return DotResult.success(null)
+	return GSResult.success(null)
 
 
 ## The project-settings names Godot shows in the editor's layer dropdowns.
 ##
 ## A layout that a designer cannot read in the inspector is a layout a designer will
-## work around, so [method DotPhysicsWorld.setup] writes these. Returns the pairs rather
+## work around, so [method GSPhysicsWorld.setup] writes these. Returns the pairs rather
 ## than writing them, because a [Resource] that edits ProjectSettings is a surprise.
 func project_setting_names(kind: String = "3d") -> Dictionary:
 	_ensure_built()
@@ -276,7 +276,7 @@ func describe_lines() -> PackedStringArray:
 
 
 func describe() -> String:
-	return "DotPhysicsLayout(%s, %d layers)" % [String(id), layers.size()]
+	return "GSPhysicsLayout(%s, %d layers)" % [String(id), layers.size()]
 
 
 func _to_string() -> String:
@@ -290,13 +290,13 @@ func _to_string() -> String:
 ## The starting point for a game whose shape is none of the four below. Everything
 ## colliding with everything is the honest default: it is what a project with no layout
 ## at all already does, so adopting this changes nothing until an exclusion is written.
-static func custom(p_id: StringName, ids: Array[StringName]) -> DotPhysicsLayout:
-	var layout := DotPhysicsLayout.new()
+static func custom(p_id: StringName, ids: Array[StringName]) -> GSPhysicsLayout:
+	var layout := GSPhysicsLayout.new()
 	layout.id = p_id
 	layout.description = "A custom layout."
 
 	for layer_id in ids:
-		layout.layers.append(DotPhysicsLayer.make(layer_id, ids.duplicate()))
+		layout.layers.append(GSPhysicsLayer.make(layer_id, ids.duplicate()))
 
 	var _res := layout.build()
 	return layout
@@ -315,8 +315,8 @@ static func custom(p_id: StringName, ids: Array[StringName]) -> DotPhysicsLayout
 ##   about and none of it is visible;
 ## - [b]a separate hitbox layer[/b], query-only, so lag-compensated hit registration can
 ##   rewind and trace against shapes that were never part of the simulation.
-static func shooter_3d() -> DotPhysicsLayout:
-	var layout := DotPhysicsLayout.new()
+static func shooter_3d() -> GSPhysicsLayout:
+	var layout := GSPhysicsLayout.new()
 	layout.id = &"shooter_3d"
 	layout.description = "Competitive first- and third-person shooters."
 
@@ -326,46 +326,46 @@ static func shooter_3d() -> DotPhysicsLayout:
 	return layout
 
 
-static func _shooter_bodies() -> Array[DotPhysicsLayer]:
+static func _shooter_bodies() -> Array[GSPhysicsLayer]:
 	return [
-		DotPhysicsLayer.make(
+		GSPhysicsLayer.make(
 			&"world",
 			[&"player", &"npc", &"prop", &"debris", &"projectile", &"vehicle", &"ragdoll"],
 			"Level geometry. Static, and everything that can move collides with it."
 		),
-		DotPhysicsLayer.make(
+		GSPhysicsLayer.make(
 			&"player",
 			[&"world", &"npc", &"prop", &"projectile", &"vehicle", &"player_clip", &"ladder"],
 			"A live player's collision hull. Not other players — see the note on "
 			+ "player-vs-player in the layout's documentation."
 		),
-		DotPhysicsLayer.make(
+		GSPhysicsLayer.make(
 			&"npc",
 			[&"world", &"player", &"npc", &"prop", &"projectile", &"vehicle", &"npc_clip"],
 			"Anything the game drives. Collides with its own kind, which players do not."
 		),
-		DotPhysicsLayer.make(
+		GSPhysicsLayer.make(
 			&"prop",
 			[&"world", &"player", &"npc", &"prop", &"projectile", &"vehicle"],
 			"A simulated object a player can push, shoot or pick up."
 		),
-		DotPhysicsLayer.make(
+		GSPhysicsLayer.make(
 			&"debris",
 			[&"world"],
 			"Shells, gibs, glass. Touches the level and nothing else, on purpose."
 		),
-		DotPhysicsLayer.make(
+		GSPhysicsLayer.make(
 			&"projectile",
 			[&"world", &"player", &"npc", &"prop", &"vehicle"],
 			"A rocket or a grenade in flight. Never a clip brush, never another "
 			+ "projectile."
 		),
-		DotPhysicsLayer.make(
+		GSPhysicsLayer.make(
 			&"vehicle",
 			[&"world", &"player", &"npc", &"prop", &"projectile", &"vehicle_clip"],
 			"A driven body, with its own clip layer for the routes it may not take."
 		),
-		DotPhysicsLayer.make(
+		GSPhysicsLayer.make(
 			&"ragdoll",
 			[&"world"],
 			"A corpse. Solid against the level so it settles, and against nothing else "
@@ -374,46 +374,46 @@ static func _shooter_bodies() -> Array[DotPhysicsLayer]:
 	]
 
 
-static func _shooter_volumes() -> Array[DotPhysicsLayer]:
+static func _shooter_volumes() -> Array[GSPhysicsLayer]:
 	return [
-		DotPhysicsLayer.make(
+		GSPhysicsLayer.make(
 			&"player_clip",
 			[&"player"],
 			"An invisible wall only players collide with.",
 			true
 		),
-		DotPhysicsLayer.make(
+		GSPhysicsLayer.make(
 			&"npc_clip",
 			[&"npc"],
 			"An invisible wall only the game's own characters collide with.",
 			true
 		),
-		DotPhysicsLayer.make(
+		GSPhysicsLayer.make(
 			&"vehicle_clip",
 			[&"vehicle"],
 			"An invisible wall only vehicles collide with.",
 			true
 		),
-		DotPhysicsLayer.make(
+		GSPhysicsLayer.make(
 			&"ladder",
 			[&"player"],
 			"A volume that changes how movement works rather than stopping it.",
 			true
 		),
-		DotPhysicsLayer.make(
+		GSPhysicsLayer.make(
 			&"water",
 			[],
 			"A volume that changes how movement works rather than stopping it.",
 			true
 		),
-		DotPhysicsLayer.make(
+		GSPhysicsLayer.make(
 			&"trigger",
 			[],
 			"Anything that fires when entered: a capture zone, a timer gate, a hurt "
 			+ "volume. Nothing ever rests on one.",
 			true
 		),
-		DotPhysicsLayer.make(
+		GSPhysicsLayer.make(
 			&"hitbox",
 			[],
 			"Per-limb shapes a shot traces against, including rewound ones. Never "
@@ -421,7 +421,7 @@ static func _shooter_volumes() -> Array[DotPhysicsLayer]:
 			+ "numbers.",
 			true
 		),
-		DotPhysicsLayer.make(
+		GSPhysicsLayer.make(
 			&"pickup",
 			[],
 			"A weapon or an item lying in the world, found by a query rather than by "
@@ -437,20 +437,20 @@ static func _shooter_volumes() -> Array[DotPhysicsLayer]:
 ## being solid. A prop on the end of a physics beam must not push the player holding it
 ## — that is a feedback loop that launches both — and a frozen prop must stay a surface
 ## a player can stand on while no longer being something the solver integrates.
-static func sandbox_3d() -> DotPhysicsLayout:
+static func sandbox_3d() -> GSPhysicsLayout:
 	var layout := shooter_3d()
 	layout.id = &"sandbox_3d"
 	layout.description = "A physics sandbox: everything the shooter has, plus held and "
 	layout.description += "frozen props."
 
-	layout.layers.append(DotPhysicsLayer.make(
+	layout.layers.append(GSPhysicsLayer.make(
 		&"held_prop",
 		[&"world", &"prop", &"npc"],
 		"A prop on the end of a physics beam. Deliberately NOT the player holding it: "
 		+ "a held object that pushes its holder pushes the beam, which pushes the "
 		+ "object, and both leave the map."
 	))
-	layout.layers.append(DotPhysicsLayer.make(
+	layout.layers.append(GSPhysicsLayer.make(
 		&"frozen_prop",
 		[&"world", &"player", &"npc", &"prop", &"projectile"],
 		"A prop the player has frozen. Still a surface to stand on and still shootable; "
@@ -467,43 +467,43 @@ static func sandbox_3d() -> DotPhysicsLayout:
 ## names: it is a layer whose collision depends on which direction the body is moving,
 ## which is a property of the collision shape in Godot and of the [i]layout[/i] in every
 ## project that forgets to separate it.
-static func platformer_2d() -> DotPhysicsLayout:
-	var layout := DotPhysicsLayout.new()
+static func platformer_2d() -> GSPhysicsLayout:
+	var layout := GSPhysicsLayout.new()
 	layout.id = &"platformer_2d"
 	layout.description = "Side-on 2D: solid ground, one-way platforms, hazards."
 
 	layout.layers = [
-		DotPhysicsLayer.make(
+		GSPhysicsLayer.make(
 			&"world", [&"player", &"enemy", &"prop", &"projectile"], "Solid ground."
 		),
-		DotPhysicsLayer.make(
+		GSPhysicsLayer.make(
 			&"one_way",
 			[&"player", &"enemy", &"prop"],
 			"A platform you pass up through and land on. Its own layer so a projectile "
 			+ "is not silently stopped by a surface the player can walk through."
 		),
-		DotPhysicsLayer.make(
+		GSPhysicsLayer.make(
 			&"player", [&"world", &"one_way", &"enemy", &"prop", &"hazard"], "The player."
 		),
-		DotPhysicsLayer.make(
+		GSPhysicsLayer.make(
 			&"enemy", [&"world", &"one_way", &"player", &"prop", &"projectile"], "Enemies."
 		),
-		DotPhysicsLayer.make(
+		GSPhysicsLayer.make(
 			&"prop", [&"world", &"one_way", &"player", &"enemy", &"projectile"], "Pushables."
 		),
-		DotPhysicsLayer.make(
+		GSPhysicsLayer.make(
 			&"projectile", [&"world", &"player", &"enemy", &"prop"], "Shots and thrown things."
 		),
-		DotPhysicsLayer.make(
+		GSPhysicsLayer.make(
 			&"hazard", [&"player"], "Spikes, lava, a crusher.", true
 		),
-		DotPhysicsLayer.make(
+		GSPhysicsLayer.make(
 			&"pickup", [], "Points pickups and power-ups, found by a query.", true
 		),
-		DotPhysicsLayer.make(
+		GSPhysicsLayer.make(
 			&"ladder", [], "Climbable volumes.", true
 		),
-		DotPhysicsLayer.make(
+		GSPhysicsLayer.make(
 			&"trigger", [], "Anything that fires when entered.", true
 		),
 	]
@@ -517,25 +517,25 @@ static func platformer_2d() -> DotPhysicsLayout:
 ## [b]Note what is missing:[/b] there is no separate debris layer, because in a top-down
 ## arena the thing that costs is the [i]count[/i] of mutually colliding bodies and the
 ## answer is a spatial hash rather than a layer. See GameSpice 2D.
-static func top_down_2d() -> DotPhysicsLayout:
-	var layout := DotPhysicsLayout.new()
+static func top_down_2d() -> GSPhysicsLayout:
+	var layout := GSPhysicsLayout.new()
 	layout.id = &"top_down_2d"
 	layout.description = "Top-down 2D arenas: no gravity, many bodies."
 
 	layout.layers = [
-		DotPhysicsLayer.make(
+		GSPhysicsLayer.make(
 			&"world", [&"player", &"enemy", &"prop", &"projectile"], "Walls."
 		),
-		DotPhysicsLayer.make(
+		GSPhysicsLayer.make(
 			&"player", [&"world", &"enemy", &"prop"], "Players. Not each other."
 		),
-		DotPhysicsLayer.make(
+		GSPhysicsLayer.make(
 			&"enemy", [&"world", &"player", &"enemy", &"prop", &"projectile"], "Enemies."
 		),
-		DotPhysicsLayer.make(
+		GSPhysicsLayer.make(
 			&"prop", [&"world", &"player", &"enemy", &"projectile"], "Pushables."
 		),
-		DotPhysicsLayer.make(
+		GSPhysicsLayer.make(
 			&"projectile", [&"world", &"enemy", &"prop"], "Shots."
 		),
 		# [b]A hazard, which this preset did not have and its side-on sibling did.[/b]
@@ -545,9 +545,9 @@ static func top_down_2d() -> DotPhysicsLayout:
 		# it showed as a game classifying a hazard body onto a layer that does not exist
 		# and being refused, which leaves the body where it was: on layer 1, which this
 		# layout calls `world`. A hazard that is a piece of floor.
-		DotPhysicsLayer.make(&"hazard", [&"player"], "Spikes, lava, a crusher.", true),
-		DotPhysicsLayer.make(&"pickup", [], "Found by a query.", true),
-		DotPhysicsLayer.make(&"trigger", [], "Fires when entered.", true),
+		GSPhysicsLayer.make(&"hazard", [&"player"], "Spikes, lava, a crusher.", true),
+		GSPhysicsLayer.make(&"pickup", [], "Found by a query.", true),
+		GSPhysicsLayer.make(&"trigger", [], "Fires when entered.", true),
 	]
 
 	var _res := layout.build()
@@ -557,19 +557,19 @@ static func top_down_2d() -> DotPhysicsLayout:
 ## Every preset, by id. What a settings screen or a console command lists.
 static func presets() -> Dictionary:
 	return {
-		&"shooter_3d": Callable(DotPhysicsLayout, "shooter_3d"),
-		&"sandbox_3d": Callable(DotPhysicsLayout, "sandbox_3d"),
-		&"platformer_2d": Callable(DotPhysicsLayout, "platformer_2d"),
-		&"top_down_2d": Callable(DotPhysicsLayout, "top_down_2d"),
+		&"shooter_3d": Callable(GSPhysicsLayout, "shooter_3d"),
+		&"sandbox_3d": Callable(GSPhysicsLayout, "sandbox_3d"),
+		&"platformer_2d": Callable(GSPhysicsLayout, "platformer_2d"),
+		&"top_down_2d": Callable(GSPhysicsLayout, "top_down_2d"),
 	}
 
 
 ## Builds a preset by name. Null for a name that is not one.
-static func preset(p_id: StringName) -> DotPhysicsLayout:
+static func preset(p_id: StringName) -> GSPhysicsLayout:
 	var table := presets()
 
 	if not table.has(p_id):
 		return null
 
 	var fn: Callable = table[p_id]
-	return fn.call() as DotPhysicsLayout
+	return fn.call() as GSPhysicsLayout

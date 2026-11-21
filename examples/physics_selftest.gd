@@ -21,7 +21,7 @@ var _section_count := 0
 
 
 func _ready() -> void:
-	DotLog.set_level(DotLog.Level.ERROR)
+	GSLog.set_level(GSLog.Level.ERROR)
 	_run()
 
 
@@ -66,7 +66,7 @@ func _run() -> void:
 func _test_layers() -> void:
 	_section("a layer")
 
-	var l := DotPhysicsLayer.make(&"player", [&"world"], "the player")
+	var l := GSPhysicsLayer.make(&"player", [&"world"], "the player")
 	_check(l.id == &"player", "has the name everything else uses")
 	_check(l.bit == -1, "and no bit until a layout gives it one")
 	_check(l.mask() == 0, "so its mask is zero, not bit zero")
@@ -81,7 +81,7 @@ func _test_layers() -> void:
 func _test_layout_presets() -> void:
 	_section("the presets")
 
-	var shooter := DotPhysicsLayout.shooter_3d()
+	var shooter := GSPhysicsLayout.shooter_3d()
 	_check(shooter.build().ok, "the shooter layout builds")
 	_check(shooter.layers.size() == 16, "with sixteen layers")
 	_check(shooter.has_layer(&"player_clip"), "including a clip layer only players hit")
@@ -100,7 +100,7 @@ func _test_layout_presets() -> void:
 		+ "numbers on purpose"
 	)
 
-	var sandbox := DotPhysicsLayout.sandbox_3d()
+	var sandbox := GSPhysicsLayout.sandbox_3d()
 	_check(sandbox.build().ok, "the sandbox layout builds")
 	_check(sandbox.layers.size() == 18, "and is the shooter's plus two")
 	_check(
@@ -113,7 +113,7 @@ func _test_layout_presets() -> void:
 		"a frozen one is still something to stand on"
 	)
 
-	var platformer := DotPhysicsLayout.platformer_2d()
+	var platformer := GSPhysicsLayout.platformer_2d()
 	_check(platformer.build().ok, "the platformer layout builds")
 	_check(
 		platformer.collides(&"one_way", &"player")
@@ -121,29 +121,29 @@ func _test_layout_presets() -> void:
 		"a one-way platform catches the player and not their shots"
 	)
 
-	var top_down := DotPhysicsLayout.top_down_2d()
+	var top_down := GSPhysicsLayout.top_down_2d()
 	_check(top_down.build().ok, "the top-down layout builds")
 	_check(
 		not top_down.collides(&"player", &"player"),
 		"and players walk through each other, because in a top-down arena they must"
 	)
 
-	_check(DotPhysicsLayout.preset(&"shooter_3d") != null, "presets resolve by name")
+	_check(GSPhysicsLayout.preset(&"shooter_3d") != null, "presets resolve by name")
 	_check(
-		DotPhysicsLayout.preset(&"nonexistent") == null,
+		GSPhysicsLayout.preset(&"nonexistent") == null,
 		"and a name that is not one resolves to nothing rather than to a default"
 	)
-	_check(DotPhysicsLayout.presets().size() == 4, "there are four of them")
+	_check(GSPhysicsLayout.presets().size() == 4, "there are four of them")
 
 
 func _test_layout_refusals() -> void:
 	_section("what a layout refuses")
 
-	var dup := DotPhysicsLayout.new()
+	var dup := GSPhysicsLayout.new()
 	dup.id = &"dup"
 	dup.layers = [
-		DotPhysicsLayer.make(&"world"),
-		DotPhysicsLayer.make(&"world"),
+		GSPhysicsLayer.make(&"world"),
+		GSPhysicsLayer.make(&"world"),
 	]
 	_check(
 		not dup.build().ok,
@@ -151,11 +151,11 @@ func _test_layout_refusals() -> void:
 		+ "second one and nothing would say so"
 	)
 
-	var typo := DotPhysicsLayout.new()
+	var typo := GSPhysicsLayout.new()
 	typo.id = &"typo"
 	typo.layers = [
-		DotPhysicsLayer.make(&"world", [&"playr"]),
-		DotPhysicsLayer.make(&"player", []),
+		GSPhysicsLayer.make(&"world", [&"playr"]),
+		GSPhysicsLayer.make(&"player", []),
 	]
 	var res := typo.build()
 	_check(
@@ -164,26 +164,26 @@ func _test_layout_refusals() -> void:
 		+ "that resolves to nothing contributes no bit, so the pair silently never "
 		+ "collides"
 	)
-	_check(res.code() == DotError.CODE_INVALID, "with an invalid code")
+	_check(res.code() == GSError.CODE_INVALID, "with an invalid code")
 	_check(res.error.message.contains("playr"), "that names the typo")
 
-	var empty := DotPhysicsLayout.new()
-	empty.layers = [DotPhysicsLayer.make(&""), ]
+	var empty := GSPhysicsLayout.new()
+	empty.layers = [GSPhysicsLayer.make(&""), ]
 	_check(not empty.build().ok, "so is a layer with no name")
 
-	var too_many := DotPhysicsLayout.new()
+	var too_many := GSPhysicsLayout.new()
 	for i in range(33):
-		too_many.layers.append(DotPhysicsLayer.make(StringName("l%d" % i)))
+		too_many.layers.append(GSPhysicsLayer.make(StringName("l%d" % i)))
 	_check(
 		not too_many.build().ok,
 		"and thirty-three layers, because a body has thirty-two bits and there is no "
 		+ "thirty-third"
 	)
 
-	var symmetric := DotPhysicsLayout.new()
+	var symmetric := GSPhysicsLayout.new()
 	symmetric.layers = [
-		DotPhysicsLayer.make(&"a", [&"b"]),
-		DotPhysicsLayer.make(&"b", []),
+		GSPhysicsLayer.make(&"a", [&"b"]),
+		GSPhysicsLayer.make(&"b", []),
 	]
 	_check(symmetric.build().ok, "a one-sided declaration builds")
 	_check(
@@ -196,7 +196,7 @@ func _test_layout_refusals() -> void:
 func _test_masks() -> void:
 	_section("masks")
 
-	var layout := DotPhysicsLayout.shooter_3d()
+	var layout := GSPhysicsLayout.shooter_3d()
 
 	_check(layout.layer_mask(&"world") == 1, "the first layer is bit zero")
 	_check(
@@ -276,7 +276,7 @@ func _test_masks() -> void:
 func _test_profiles() -> void:
 	_section("profiles")
 
-	var p := DotPhysicsProfile.new()
+	var p := GSPhysicsProfile.new()
 	_check(p.validate().ok, "the defaults validate")
 	_check(
 		is_equal_approx(p.gravity_3d, 20.0),
@@ -285,7 +285,7 @@ func _test_profiles() -> void:
 	)
 	_check(is_equal_approx(p.tick_delta(), 1.0 / 60.0), "and a tick is 1/60 s")
 
-	var arcade := DotPhysicsProfile.arcade_shooter()
+	var arcade := GSPhysicsProfile.arcade_shooter()
 	_check(arcade.tick_rate == 128, "the arcade shooter runs at 128 Hz")
 	_check(
 		not arcade.physics_interpolation,
@@ -296,29 +296,29 @@ func _test_profiles() -> void:
 		"and characters that cannot be shoved off a ledge by a team-mate with a crate"
 	)
 
-	var grounded := DotPhysicsProfile.grounded()
+	var grounded := GSPhysicsProfile.grounded()
 	_check(grounded.solver_iterations > arcade.solver_iterations, "grounded solves harder")
 	_check(grounded.gravity_3d < arcade.gravity_3d, "and falls slower")
 
-	var sandbox := DotPhysicsProfile.sandbox()
+	var sandbox := GSPhysicsProfile.sandbox()
 	_check(sandbox.characters_push_bodies, "the sandbox lets players shove things")
 	_check(sandbox.solver_iterations >= 24, "and solves hard enough for a stack to hold")
 
-	var top_down := DotPhysicsProfile.top_down()
+	var top_down := GSPhysicsProfile.top_down()
 	_check(not top_down.gravity_2d_enabled, "the top-down profile has no gravity")
 	_check(top_down.gravity_vector_2d() == Vector2.ZERO, "and its gravity vector is zero")
 
-	var floaty := DotPhysicsProfile.floaty_platformer()
+	var floaty := GSPhysicsProfile.floaty_platformer()
 	_check(floaty.max_slope_angle > grounded.max_slope_angle, "the platformer is forgiving")
 
-	_check(DotPhysicsProfile.presets().size() == 5, "there are five profile presets")
-	_check(DotPhysicsProfile.preset(&"sandbox") != null, "and they resolve by name")
-	_check(DotPhysicsProfile.preset(&"nope") == null, "an unknown one resolves to nothing")
+	_check(GSPhysicsProfile.presets().size() == 5, "there are five profile presets")
+	_check(GSPhysicsProfile.preset(&"sandbox") != null, "and they resolve by name")
+	_check(GSPhysicsProfile.preset(&"nope") == null, "an unknown one resolves to nothing")
 
 	# The jump-height conversion, which is the reason gravity lives here at all.
-	var slow := DotPhysicsProfile.new()
+	var slow := GSPhysicsProfile.new()
 	slow.gravity_3d = 5.0
-	var fast := DotPhysicsProfile.new()
+	var fast := GSPhysicsProfile.new()
 	fast.gravity_3d = 20.0
 	_check(
 		slow.jump_speed_for(1.0) < fast.jump_speed_for(1.0),
@@ -326,7 +326,7 @@ func _test_profiles() -> void:
 		+ "is what keeps a jump honest when gravity is retuned"
 	)
 
-	var bad := DotPhysicsProfile.new()
+	var bad := GSPhysicsProfile.new()
 	bad.contact_max_separation = 0.001
 	bad.max_allowed_penetration = 0.01
 	_check(
@@ -335,7 +335,7 @@ func _test_profiles() -> void:
 		+ "discard the contacts it is meant to be correcting"
 	)
 
-	var layered := DotPhysicsProfile.new()
+	var layered := GSPhysicsProfile.new()
 	var applied := layered.apply_dictionary({"tick_rate": 128, "gravity_3d": 15.5})
 	_check(applied.size() == 2, "a profile takes a dictionary the family's way")
 	_check(layered.tick_rate == 128, "and the tick rate came through")
@@ -347,7 +347,7 @@ func _test_profiles() -> void:
 func _test_surfaces() -> void:
 	_section("surfaces")
 
-	var set := DotPhysicsSurfaceSet.standard()
+	var set := GSPhysicsSurfaceSet.standard()
 	_check(set.build().ok, "the standard table builds")
 	_check(set.ids().size() == 18, "with eighteen surfaces")
 	_check(set.get_surface(&"thin_ice").break_health > 0.0 and set.get_surface(&"thin_ice").break_health < set.get_surface(&"glass").break_health,
@@ -383,8 +383,8 @@ func _test_surfaces() -> void:
 		+ "is halfway through playing a sound"
 	)
 
-	var broken := DotPhysicsSurfaceSet.new()
-	broken.surfaces = [DotPhysicsSurface.make(&"a", 1.0, 0.0, 1.0)]
+	var broken := GSPhysicsSurfaceSet.new()
+	broken.surfaces = [GSPhysicsSurface.make(&"a", 1.0, 0.0, 1.0)]
 	broken.fallback_id = &"missing"
 	_check(
 		not broken.build().ok,
@@ -392,15 +392,15 @@ func _test_surfaces() -> void:
 		+ "resolves to null and each caller crashes somewhere else"
 	)
 
-	_check(not DotPhysicsSurfaceSet.new().build().ok, "an empty table is refused")
+	_check(not GSPhysicsSurfaceSet.new().build().ok, "an empty table is refused")
 
 	_test_surface_lookup(set)
 
 
-func _test_surface_lookup(set: DotPhysicsSurfaceSet) -> void:
+func _test_surface_lookup(set: GSPhysicsSurfaceSet) -> void:
 	var tagged := StaticBody3D.new()
 	tagged.name = "SomeWall"
-	DotPhysicsSurfaceSet.tag(tagged, &"metal")
+	GSPhysicsSurfaceSet.tag(tagged, &"metal")
 	add_child(tagged)
 	_check(set.for_collider(tagged).id == &"metal", "metadata is checked first")
 
@@ -442,7 +442,7 @@ func _test_surface_lookup(set: DotPhysicsSurfaceSet) -> void:
 func _test_surface_apply() -> void:
 	_section("surface predicates and apply")
 
-	var set := DotPhysicsSurfaceSet.standard()
+	var set := GSPhysicsSurfaceSet.standard()
 	_check(set.find(&"nonsense") == null and set.find(&"ice") != null, "find has no fallback")
 	_check(set.is_liquid(&"water") and set.is_liquid(&"lava") and not set.is_liquid(&"ice"), "liquids")
 	_check(not set.is_liquid(&"nonsense"), "an unknown id is not a liquid")
@@ -455,19 +455,19 @@ func _test_surface_apply() -> void:
 	var keys: Array[StringName] = [&"my_key"]
 	var res := set.apply(body, &"ice", keys)
 	_check(res.ok, "apply succeeds")
-	_check(body.get_meta("my_key") == &"ice" and body.get_meta(DotPhysicsSurfaceSet.META_KEY) == "ice",
+	_check(body.get_meta("my_key") == &"ice" and body.get_meta(GSPhysicsSurfaceSet.META_KEY) == "ice",
 		"it writes the extra key and the standard one")
-	_check(DotPhysicsSurfaceSet.material_of(body) == &"ice", "material_of reads it back")
+	_check(GSPhysicsSurfaceSet.material_of(body) == &"ice", "material_of reads it back")
 	_check(body.physics_material_override != null and body.physics_material_override.friction < 0.2,
 		"the solver material is set")
 	_check(set.for_collider(body).id == &"ice", "for_collider finds the applied surface")
 
 	var other := StaticBody3D.new()
 	var bad := set.apply(other, &"nonsense")
-	_check(not bad.ok and bad.error.code == DotError.CODE_INVALID, "unknown id is refused")
+	_check(not bad.ok and bad.error.code == GSError.CODE_INVALID, "unknown id is refused")
 	_check(other.get_meta_list().is_empty() and other.physics_material_override == null, "and the body is untouched")
 	_check(not set.apply(null, &"ice").ok, "null body is refused")
-	_check(DotPhysicsSurfaceSet.material_of(other) == &"" and DotPhysicsSurfaceSet.material_of(null) == &"",
+	_check(GSPhysicsSurfaceSet.material_of(other) == &"" and GSPhysicsSurfaceSet.material_of(null) == &"",
 		"material_of is empty for none")
 	_check(set.apply(other, &"rubber").ok and other.physics_material_override.bounce > 0.5, "a second body takes rubber")
 
@@ -484,11 +484,11 @@ func _test_world() -> void:
 	))
 	var before_gravity: Variant = ProjectSettings.get_setting("physics/3d/default_gravity", 9.8)
 
-	var world := DotPhysicsWorld.new()
+	var world := GSPhysicsWorld.new()
 	world.register_service = false
-	world.profile = DotPhysicsProfile.arcade_shooter()
-	world.layout = DotPhysicsLayout.shooter_3d()
-	world.surfaces = DotPhysicsSurfaceSet.standard()
+	world.profile = GSPhysicsProfile.arcade_shooter()
+	world.layout = GSPhysicsLayout.shooter_3d()
+	world.surfaces = GSPhysicsSurfaceSet.standard()
 	add_child(world)
 
 	var res := world.setup()
@@ -535,7 +535,7 @@ func _test_world() -> void:
 		+ "next one running on the last one's physics"
 	)
 	_check(
-		DotValue.same(ProjectSettings.get_setting("physics/3d/default_gravity", null),
+		GSValue.same(ProjectSettings.get_setting("physics/3d/default_gravity", null),
 			before_gravity),
 		"and so is gravity"
 	)
@@ -547,9 +547,9 @@ func _test_world() -> void:
 
 
 func _test_world_refuses_invalid() -> void:
-	var invalid := DotPhysicsWorld.new()
+	var invalid := GSPhysicsWorld.new()
 	invalid.register_service = false
-	invalid.profile = DotPhysicsProfile.new()
+	invalid.profile = GSPhysicsProfile.new()
 	invalid.profile.contact_max_separation = 0.0001
 	invalid.profile.max_allowed_penetration = 0.5
 	add_child(invalid)
@@ -567,16 +567,16 @@ func _test_world_refuses_invalid() -> void:
 func _test_queries() -> void:
 	_section("queries")
 
-	var layout := DotPhysicsLayout.shooter_3d()
-	var surfaces := DotPhysicsSurfaceSet.standard()
-	var q := DotPhysicsQuery.new(layout, surfaces)
+	var layout := GSPhysicsLayout.shooter_3d()
+	var surfaces := GSPhysicsSurfaceSet.standard()
+	var q := GSPhysicsQuery.new(layout, surfaces)
 
 	_check(q.layout == layout, "a query carries its layout")
 	_test_queries_without_world(q)
 	await _test_queries_in_world(layout, q)
 
 
-func _test_queries_without_world(q: DotPhysicsQuery) -> void:
+func _test_queries_without_world(q: GSPhysicsQuery) -> void:
 	_check(
 		q.ray_3d(null, Vector3.ZERO, Vector3.ONE, [&"world"]).is_empty(),
 		"a cast with no world answers nothing rather than crashing"
@@ -589,7 +589,7 @@ func _test_queries_without_world(q: DotPhysicsQuery) -> void:
 	_check(q.circle_2d(null, Vector2.ZERO, 1.0, [&"prop"]).is_empty(), "and a circle")
 	_check(not q.line_of_sight_3d(null, Vector3.ZERO, Vector3.ONE), "and sight is refused")
 
-	var bare := DotPhysicsQuery.new()
+	var bare := GSPhysicsQuery.new()
 	_check(
 		bare.layout == null,
 		"a query with no layout is allowed, because this addon being absent should "
@@ -597,7 +597,7 @@ func _test_queries_without_world(q: DotPhysicsQuery) -> void:
 	)
 
 
-func _test_queries_in_world(layout: DotPhysicsLayout, q: DotPhysicsQuery) -> void:
+func _test_queries_in_world(layout: GSPhysicsLayout, q: GSPhysicsQuery) -> void:
 	var space := StaticBody3D.new()
 	var shape := CollisionShape3D.new()
 	var box := BoxShape3D.new()
@@ -605,7 +605,7 @@ func _test_queries_in_world(layout: DotPhysicsLayout, q: DotPhysicsQuery) -> voi
 	shape.shape = box
 	space.add_child(shape)
 	space.position = Vector3(0, 0, -5)
-	DotPhysicsSurfaceSet.tag(space, &"metal")
+	GSPhysicsSurfaceSet.tag(space, &"metal")
 	var _applied := layout.apply_to(space, &"world")
 	add_child(space)
 
@@ -619,7 +619,7 @@ func _test_queries_in_world(layout: DotPhysicsLayout, q: DotPhysicsQuery) -> voi
 	_check(not hit.is_empty(), "a ray finds a wall on the layer it was told about")
 	_check(hit.get("collider", null) == space, "and reports which one")
 	_check(
-		(hit.get("surface", null) as DotPhysicsSurface).id == &"metal",
+		(hit.get("surface", null) as GSPhysicsSurface).id == &"metal",
 		"with the surface attached, which is the thing Godot's own result never says"
 	)
 
@@ -643,7 +643,7 @@ func _test_queries_in_world(layout: DotPhysicsLayout, q: DotPhysicsQuery) -> voi
 	var overlaps := q.sphere_3d(space.get_world_3d(), Vector3(0, 0, -5), 1.0, [&"world"])
 	_check(overlaps.size() == 1, "a sphere finds it too")
 	_check(
-		(overlaps[0].get("surface", null) as DotPhysicsSurface).id == &"metal",
+		(overlaps[0].get("surface", null) as GSPhysicsSurface).id == &"metal",
 		"and decorates that as well"
 	)
 
@@ -725,7 +725,7 @@ func _test_space_query_audit() -> void:
 
 func _test_tick_gate() -> void:
 	_section("tick gate")
-	var gate := DotTickGate.new()
+	var gate := GSTickGate.new()
 	# Lambdas capture by value, so the record and the fake step flag live in arrays.
 	var seen: Array[String] = []
 	var step: Array[bool] = [false]

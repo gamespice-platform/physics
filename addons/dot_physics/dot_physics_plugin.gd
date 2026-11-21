@@ -4,13 +4,13 @@ extends EditorPlugin
 ## Editor entry point for GameSpice Physics. Registers inspector types only.
 ##
 ## No autoloads: a client and a server in one process each want their own
-## [DotPhysicsWorld], and the second one is exactly the case an autoload forbids.
+## [GSPhysicsWorld], and the second one is exactly the case an autoload forbids.
 
 const _ICON := "res://addons/dot_physics/icon_placeholder.svg"
 
 const _TYPES := [
 	[
-		"DotPhysicsWorld",
+		"GSPhysicsWorld",
 		"Node",
 		"res://addons/dot_physics/runtime/dot_physics_world.gd",
 	],

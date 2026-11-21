@@ -1,11 +1,11 @@
 @tool
-class_name DotPhysicsSurface
+class_name GSPhysicsSurface
 extends Resource
 
 ## What one material is like to collide with: friction, bounce, density, and what it
 ## sounds like.
 ##
-## [b]Distinct from GameSpice Player Controller's [code]DotFpsSurface[/code], and the difference
+## [b]Distinct from GameSpice Player Controller's [code]GSFpsSurface[/code], and the difference
 ## is worth stating because the two will otherwise be merged by somebody tidying up.[/b]
 ## That one is a set of [i]multipliers on player movement[/i] — ice makes you accelerate
 ## worse. This one is what the [i]solver[/i] is told about a rigid body: how much it
@@ -113,8 +113,8 @@ static func make(
 	p_friction: float,
 	p_restitution: float,
 	p_density: float
-) -> DotPhysicsSurface:
-	var s := DotPhysicsSurface.new()
+) -> GSPhysicsSurface:
+	var s := GSPhysicsSurface.new()
 	s.id = p_id
 	s.display_name = String(p_id).capitalize()
 	s.friction = p_friction
@@ -160,4 +160,4 @@ func describe() -> String:
 
 
 func _to_string() -> String:
-	return "DotPhysicsSurface(%s)" % describe()
+	return "GSPhysicsSurface(%s)" % describe()

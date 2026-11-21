@@ -18,10 +18,10 @@ Needs Godot 4.7 or newer.
 ## Use
 
 ```gdscript
-var physics := DotPhysicsWorld.new()
-physics.profile  = DotPhysicsProfile.arcade_shooter()
-physics.layout   = DotPhysicsLayout.shooter_3d()
-physics.surfaces = DotPhysicsSurfaceSet.standard()
+var physics := GSPhysicsWorld.new()
+physics.profile  = GSPhysicsProfile.arcade_shooter()
+physics.layout   = GSPhysicsLayout.shooter_3d()
+physics.surfaces = GSPhysicsSurfaceSet.standard()
 add_child(physics)
 
 var res := physics.setup()
@@ -31,11 +31,11 @@ if not res.ok:
 physics.classify(player_body, &"player")   # layer and mask, by name
 var hit := physics.query().shot_3d(world, muzzle, muzzle + dir * 100.0)
 if not hit.is_empty():
-    var surface: DotPhysicsSurface = hit["surface"]
+    var surface: GSPhysicsSurface = hit["surface"]
     audio.play(surface.impact_sound)
 ```
 
-`DotPhysicsWorld` remembers every setting it changed and restores them when it leaves the tree. A server that switches between two games therefore never keeps the first game's gravity.
+`GSPhysicsWorld` remembers every setting it changed and restores them when it leaves the tree. A server that switches between two games therefore never keeps the first game's gravity.
 
 ## Layouts
 
@@ -45,7 +45,7 @@ if not hit.is_empty():
 | `sandbox_3d` | The shooter layout plus `held_prop` and `frozen_prop`. A held prop does not push the player holding it. |
 | `platformer_2d` | Side-on. One-way platforms have their own layer. |
 | `top_down_2d` | No gravity, many bodies, players pass through each other. |
-| `DotPhysicsLayout.custom()` | Your own layer list. |
+| `GSPhysicsLayout.custom()` | Your own layer list. |
 
 Each layout declares a collision relation once ("debris collides with world") and `build()` makes it symmetric. An unknown layer name is an error at build time, not silently ignored.
 
@@ -59,11 +59,11 @@ Each layout declares a collision relation once ("debris collides with world") an
 | `floaty_platformer` | Long jumps, generous slopes. |
 | `top_down` | No gravity. |
 
-These numbers are the defaults of each profile, not limits. Every profile is a `DotConfig`, so values can be overridden in layers: defaults, then a JSON file, then environment variables, then the command line, for example `--physics-tick-rate 128`.
+These numbers are the defaults of each profile, not limits. Every profile is a `GSConfig`, so values can be overridden in layers: defaults, then a JSON file, then environment variables, then the command line, for example `--physics-tick-rate 128`.
 
 ## Surfaces
 
-`DotPhysicsSurfaceSet.standard()` has 11 materials with friction, restitution, density, sheet thickness, movement multipliers and sound/effect ids. `for_collider()` looks a surface up from node metadata, then groups, then the node name (a best guess, for mapper-built levels).
+`GSPhysicsSurfaceSet.standard()` has 11 materials with friction, restitution, density, sheet thickness, movement multipliers and sound/effect ids. `for_collider()` looks a surface up from node metadata, then groups, then the node name (a best guess, for mapper-built levels).
 
 This is not GameSpice Player Controller's surface table. That one scales player movement; this one tells the solver about rigid bodies.
 

@@ -18,14 +18,14 @@ Read the family [CLAUDE.md](../../CLAUDE.md) first.
 
 | Path | What |
 | --- | --- |
-| `core/dot_physics_layer.gd` | `DotPhysicsLayer`: one named layer, `collides_with`, `query_only`, the assigned `bit` |
-| `core/dot_physics_layout.gd` | `DotPhysicsLayout`: the set, `build()` closing the matrix, `layer_mask`/`mask_of`/`solid_mask`, four presets and `custom` |
-| `core/dot_physics_profile.gd` | `DotPhysicsProfile`: every engine number (gravity, tick rate, ...) as a layered `DotConfig` |
-| `core/dot_physics_surface.gd` | `DotPhysicsSurface`: what one material is like to collide with |
-| `core/dot_physics_surface_set.gd` | `DotPhysicsSurfaceSet`: the table, `standard()`, how a collider maps to an entry (`tag`) |
-| `runtime/dot_physics_world.gd` | `DotPhysicsWorld`: applies a profile and a layout, `classify`, puts settings back on exit |
-| `runtime/dot_physics_query.gd` | `DotPhysicsQuery`: casts written against layer names (`shot_3d`) |
-| `runtime/dot_tick_gate.gd` | `DotTickGate`: holds handlers heard between ticks until the server's next tick (docs/threading.md) |
+| `core/dot_physics_layer.gd` | `GSPhysicsLayer`: one named layer, `collides_with`, `query_only`, the assigned `bit` |
+| `core/dot_physics_layout.gd` | `GSPhysicsLayout`: the set, `build()` closing the matrix, `layer_mask`/`mask_of`/`solid_mask`, four presets and `custom` |
+| `core/dot_physics_profile.gd` | `GSPhysicsProfile`: every engine number (gravity, tick rate, ...) as a layered `GSConfig` |
+| `core/dot_physics_surface.gd` | `GSPhysicsSurface`: what one material is like to collide with |
+| `core/dot_physics_surface_set.gd` | `GSPhysicsSurfaceSet`: the table, `standard()`, how a collider maps to an entry (`tag`) |
+| `runtime/dot_physics_world.gd` | `GSPhysicsWorld`: applies a profile and a layout, `classify`, puts settings back on exit |
+| `runtime/dot_physics_query.gd` | `GSPhysicsQuery`: casts written against layer names (`shot_3d`) |
+| `runtime/dot_tick_gate.gd` | `GSTickGate`: holds handlers heard between ticks until the server's next tick (docs/threading.md) |
 | `examples/physics_selftest.tscn` | the suite: no world, no bodies, no renderer for the `core/` half |
 
 Paths except `examples/` are in `addons/dot_physics/`.
@@ -42,7 +42,7 @@ The family's two steps ([family CLAUDE.md](../../CLAUDE.md#validating-anything))
 - Never name a method after an `Object` virtual (`_set`); hence `_write_setting`. [design](docs/design.md#anything-that-writes-to-projectsettings-puts-it-back)
 - Declare `collides_with` one way; `build()` closes it and must keep refusing an unknown name. [design](docs/design.md#the-collision-relation-is-declared-once)
 - Shots use `solid_mask()`, so `query_only` layers never stop them. [design](docs/design.md#where-the-presets-came-from)
-- Naming layers changes nothing until a game calls `classify` on every body; never discard its `DotResult`. [design](docs/design.md#naming-a-layer-is-half-a-layout-the-other-half-is-classify)
-- A game that moves bodies off bit 0 sets `DotFpsTunables.collision_mask` from the layout (it defaults to 1). [design](docs/design.md#naming-a-layer-is-half-a-layout-the-other-half-is-classify)
+- Naming layers changes nothing until a game calls `classify` on every body; never discard its `GSResult`. [design](docs/design.md#naming-a-layer-is-half-a-layout-the-other-half-is-classify)
+- A game that moves bodies off bit 0 sets `GSFpsTunables.collision_mask` from the layout (it defaults to 1). [design](docs/design.md#naming-a-layer-is-half-a-layout-the-other-half-is-classify)
 - Build the layout on every peer; only the profile is the server's. [design](docs/design.md#naming-a-layer-is-half-a-layout-the-other-half-is-classify)
 - Surface fields (`liquid`, `break_health`, `hazard_damage`, `jump_scale`, `solid`) are numbers; the game decides what they do. [design](docs/design.md#surfaces-are-numbers-not-behaviour)

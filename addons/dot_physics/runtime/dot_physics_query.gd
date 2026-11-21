@@ -1,4 +1,4 @@
-class_name DotPhysicsQuery
+class_name GSPhysicsQuery
 extends RefCounted
 
 ## Casts written against layer names instead of bit arithmetic, in 2D and 3D.
@@ -11,16 +11,16 @@ extends RefCounted
 ## to stop people writing.
 ##
 ## The results are plain [Dictionary] values — Godot's own shape, plus a
-## [code]surface[/code] entry when a [DotPhysicsSurfaceSet] was supplied — so nothing
+## [code]surface[/code] entry when a [GSPhysicsSurfaceSet] was supplied — so nothing
 ## downstream has to import this class to read one.
 
 const CHANNEL := "physics.query"
 
-var layout: DotPhysicsLayout = null
-var surfaces: DotPhysicsSurfaceSet = null
+var layout: GSPhysicsLayout = null
+var surfaces: GSPhysicsSurfaceSet = null
 
 
-func _init(p_layout: DotPhysicsLayout = null, p_surfaces: DotPhysicsSurfaceSet = null) -> void:
+func _init(p_layout: GSPhysicsLayout = null, p_surfaces: GSPhysicsSurfaceSet = null) -> void:
 	layout = p_layout
 	surfaces = p_surfaces
 
@@ -30,7 +30,7 @@ func _init(p_layout: DotPhysicsLayout = null, p_surfaces: DotPhysicsSurfaceSet =
 ## A ray from [param from] to [param to], hitting only the named layers.
 ##
 ## Empty dictionary for a miss, which is Godot's own convention and is why this does not
-## return a [DotResult]: a ray that hits nothing is not a failure, it is an answer, and
+## return a [GSResult]: a ray that hits nothing is not a failure, it is an answer, and
 ## wrapping it would make every call site branch twice.
 func ray_3d(
 	world: World3D,
@@ -41,7 +41,7 @@ func ray_3d(
 	hit_areas: bool = false
 ) -> Dictionary:
 	if world == null:
-		DotLog.warn(CHANNEL, "no world to cast in")
+		GSLog.warn(CHANNEL, "no world to cast in")
 		return {}
 
 	var params := PhysicsRayQueryParameters3D.create(from, to)
@@ -139,7 +139,7 @@ func ray_2d(
 	hit_areas: bool = false
 ) -> Dictionary:
 	if world == null:
-		DotLog.warn(CHANNEL, "no world to cast in")
+		GSLog.warn(CHANNEL, "no world to cast in")
 		return {}
 
 	var params := PhysicsRayQueryParameters2D.create(from, to)
