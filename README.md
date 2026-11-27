@@ -73,8 +73,26 @@ This is not GameSpice Player Controller's surface table. That one scales player 
 - [docs/threading.md](docs/threading.md) for threading notes
 - [docs/history.md](docs/history.md) for past bugs
 
+## Used by
+
+These games vendor it:
+
+- [Hungario](https://zeesgames.com/hungario)
+- [Smash Copter](https://zeesgames.com/smash-copter)
+- [Prop Hunt](https://zeesgames.com/prop-hunt)
+- [Hide n Seek](https://zeesgames.com/hide-n-seek)
+- [Airdrift](https://zeesgames.com/airdrift)
+- [Deathrun](https://zeesgames.com/deathrun)
+- [Zombie Zone](https://zeesgames.com/zombie-zone)
+- [Fatal Contact](https://zeesgames.com/fatal-contact)
+- [Playlot](https://zeesgames.com/playlot)
+- [Murder Mystery](https://zeesgames.com/murder-mystery)
+- [Wipeout](https://zeesgames.com/wipeout)
+
+The whole collection is at [zeesgames.com](https://zeesgames.com).
+
 ## Status and licence
 
-Part of the [**GameSpice**](https://gamespice.net) platform: a family of Godot addons. Written with Claude Code and maintained by `gamemann`. Every addon has headless tests, but little of this has been played by real users yet, so expect rough edges and please [open an issue](https://github.com/gamespice-platform/physics/issues) when you hit one.
+Part of the [**GameSpice**](https://gamespice.net) platform: a family of Godot addons, MIT licensed and built with Claude Code. The headless suite is `res://examples/physics_selftest.tscn`. The addon is used in play: the games in [Zee's Games](https://zeesgames.com) are built on GameSpice addons and run on live servers. If you hit a problem, please [open an issue](https://github.com/gamespice-platform/physics/issues).
 
 MIT licence, see [LICENSE](LICENSE). The only closed part of the [**GameSpice**](https://gamespice.net) platform is the web back end; you can use your own instead of GameSpice's.
