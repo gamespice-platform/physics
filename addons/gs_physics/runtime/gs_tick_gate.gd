@@ -30,7 +30,7 @@ var _calls: Array[Callable] = []
 ## Runs [param fn] now when this is the tick (or the gate is unarmed), else at the top of the next tick.
 func run(fn: Callable) -> void:
 	if not waits():
-		fn.call()
+		fn.call()  # perf-lint: allow dynamic_call the gate exists to run queued callables
 		return
 	_calls.append(fn)
 
@@ -43,7 +43,7 @@ func reached() -> void:
 
 ## Whether a call made now would wait for the next tick.
 func waits() -> bool:
-	return armed and not bool(in_step.call())
+	return armed and not bool(in_step.call())  # perf-lint: allow dynamic_call the gate exists to run queued callables
 
 
 ## How many calls are queued for the next tick.
@@ -56,10 +56,10 @@ func pending() -> int:
 func open() -> void:
 	if not _calls.is_empty():
 		var calls := _calls
-		_calls = []
+		_calls = []  # perf-lint: allow alloc only when the gate opens with queued work
 		for fn: Callable in calls:
 			if fn.is_valid():
-				fn.call()
+				fn.call()  # perf-lint: allow dynamic_call the gate exists to run queued callables
 	opened.emit()
 
 

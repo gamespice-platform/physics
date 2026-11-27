@@ -130,7 +130,7 @@ func layer_mask(layer_id: StringName) -> int:
 	var l: GSPhysicsLayer = _by_id.get(layer_id, null)
 
 	if l == null:
-		GSLog.warn(CHANNEL, "no such layer", {"layer": String(layer_id), "layout": String(id)})
+		GSLog.warn(CHANNEL, "no such layer", {"layer": String(layer_id), "layout": String(id)})  # perf-lint: allow alloc warning path only
 		return 0
 
 	return l.mask()
@@ -142,7 +142,7 @@ func collision_mask(layer_id: StringName) -> int:
 	var l: GSPhysicsLayer = _by_id.get(layer_id, null)
 
 	if l == null:
-		GSLog.warn(CHANNEL, "no such layer", {"layer": String(layer_id), "layout": String(id)})
+		GSLog.warn(CHANNEL, "no such layer", {"layer": String(layer_id), "layout": String(id)})  # perf-lint: allow alloc warning path only
 		return 0
 
 	var mask := 0
@@ -162,7 +162,7 @@ func mask_of(ids: Array[StringName]) -> int:
 	for layer_id in ids:
 		var l: GSPhysicsLayer = _by_id.get(layer_id, null)
 		if l == null:
-			GSLog.warn(CHANNEL, "no such layer", {"layer": String(layer_id)})
+			GSLog.warn(CHANNEL, "no such layer", {"layer": String(layer_id)})  # perf-lint: allow alloc warning path only
 			continue
 		mask |= l.mask()
 

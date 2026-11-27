@@ -100,7 +100,7 @@ func for_collider(collider: Object) -> GSPhysicsSurface:
 
 		if node.has_meta(META_KEY):
 			var from_meta: Variant = node.get_meta(META_KEY)
-			var meta_id := StringName(str(from_meta))
+			var meta_id: StringName = from_meta if from_meta is StringName else StringName(str(from_meta))  # perf-lint: allow string_build only for non-StringName meta
 			if _by_id.has(meta_id):
 				return _by_id[meta_id]
 
@@ -113,7 +113,7 @@ func for_collider(collider: Object) -> GSPhysicsSurface:
 		# Substring rather than equality because names in a level are never exactly a
 		# surface id, and this is the one place where guessing beats nothing.
 		var lowered := node.name.to_lower()
-		for surface_id: Variant in _by_id.keys():
+		for surface_id: StringName in _by_id:
 			if lowered.contains(String(surface_id)):
 				return _by_id[surface_id]
 
@@ -179,7 +179,8 @@ func apply(body: CollisionObject3D, surface_id: StringName, extra_meta_keys: Arr
 ## The id [method apply] recorded on a node, or empty.
 static func material_of(node: Object) -> StringName:
 	if node is Node and (node as Node).has_meta(META_MATERIAL):
-		return StringName(str((node as Node).get_meta(META_MATERIAL)))
+		var m: Variant = (node as Node).get_meta(META_MATERIAL)
+		return m if m is StringName else StringName(str(m))  # perf-lint: allow string_build only for non-StringName meta
 	return &""
 
 

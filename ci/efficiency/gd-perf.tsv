@@ -1,0 +1,16 @@
+# gd-perf
+# Baselines only shrink: scripts/<gate> --update lowers or drops entries and refuses to add.
+addons/gs_physics/core/gs_physics_layout.gd::<members>::untyped_array	1
+addons/gs_physics/core/gs_physics_layout.gd::presets::untyped_array	1
+addons/gs_physics/core/gs_physics_layout.gd::project_setting_names::untyped_array	2
+addons/gs_physics/core/gs_physics_profile.gd::presets::untyped_array	1
+addons/gs_physics/core/gs_physics_surface_set.gd::<members>::untyped_array	1
+addons/gs_physics/core/gs_physics_surface_set.gd::for_collider::alloc	2
+addons/gs_physics/core/gs_physics_surface_set.gd::material_of::alloc	1
+addons/gs_physics/runtime/gs_physics_query.gd::_decorate::untyped_array	1
+addons/gs_physics/runtime/gs_physics_query.gd::ray_2d::untyped_array	1
+addons/gs_physics/runtime/gs_physics_query.gd::ray_3d::untyped_array	1
+addons/gs_physics/runtime/gs_physics_query.gd::shot_3d::untyped_array	1
+addons/gs_physics/runtime/gs_physics_world.gd::<members>::untyped_array	1
+addons/gs_physics/runtime/gs_physics_world.gd::_preset_names::untyped_array	1
+addons/gs_physics/runtime/gs_tick_gate.gd::describe::untyped_array	1

@@ -1,0 +1,13 @@
+# Runtime scripts checked by gs-ci scripts/check-gd-perf.py (tools/gd_perf_lint.py).
+# One fnmatch glob per line over tracked paths. Baseline: ci/efficiency/gd-perf.tsv.
+addons/gs_physics/core/gs_physics_layer.gd
+addons/gs_physics/core/gs_physics_layout.gd
+addons/gs_physics/core/gs_physics_profile.gd
+addons/gs_physics/core/gs_physics_surface.gd
+addons/gs_physics/core/gs_physics_surface_set.gd
+addons/gs_physics/runtime/gs_physics_query.gd
+addons/gs_physics/runtime/gs_physics_world.gd
+addons/gs_physics/runtime/gs_tick_gate.gd
+
+# Run once or per spawn (presets, project settings, assigning layers and surfaces to a node), not per tick:
+cold+: ^(from_.*|describe.*|specs|cvar_specs|_absorb_specs|set_cvar|follow_cvars|validate.*|presets|properties|standard_pair|restore|_restore_.*|to_config|parse_.*|_parse_.*|find_spot|preset|platformer_2d|sandbox_3d|top_down_2d|_shooter_bodies|_shooter_volumes|project_setting_names|custom|_standard_ground|_standard_other|_ensure_built|apply_to|apply|classify|use_layout_preset|use_profile_preset|_write_setting|_setting|layer_ids|ids)$
